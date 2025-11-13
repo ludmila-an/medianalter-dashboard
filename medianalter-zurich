@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>Medianalter in Zürich – Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+  </script>
+
+  <style>
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; background: #f5f5f5; }
+    header { background:#1f2937; color:white; padding:20px; }
+    main { padding:20px; max-width:1100px; margin:auto; }
+    #controls { display:flex; gap:20px; background:white; padding:15px; border-radius:10px; margin-bottom:20px; flex-wrap:wrap; }
+    .chart-card { background:white; padding:15px; border-radius:10px; margin-bottom:20px; }
+    canvas { width:100%; height:300px; }
+
+    #kpis { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; }
+    #kpis .kpi-card {
+      flex:1 1 200px;
+      background:white;
+      padding:15px;
+      border-radius:10px;
+    }
+    #kpis .kpi-label { font-size:0.9rem; color:#4b5563; margin-bottom:4px; }
+    #kpis .kpi-value { font-size:1.6rem; font-weight:bold; }
+    #kpis .kpi-sub { font-size:0.85rem; color:#6b7280; margin-top:4px; }
+
+    #map {
+      width: 100%;
+      height: 420px;
+      border-radius: 10px;
+    }
+
+    #download-card button {
+      margin-right: 10px;
+      margin-bottom: 6px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background:#ec4899;
+      color:white;
+      font-size:0.9rem;
+    }
+    #download-card button:hover {
+      background:#db2777;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+  <!--   THIS IS WHERE YOU PASTE YOUR CSV   -->
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+
+  <script id="csv-data" type="text/plain">
+StichtagDatJahr,RaumSort,RaumLang,Medianalter
+1993,0,"Ganze Stadt",39.8
+1994,0,"Ganze Stadt",39.7
+1995,0,"Ganze Stadt",39.5
+1996,0,"Ganze Stadt",39.4
+1997,0,"Ganze Stadt",39.2
+1998,0,"Ganze Stadt",39
+1999,0,"Ganze Stadt",38.8
+2000,0,"Ganze Stadt",38.7
+2001,0,"Ganze Stadt",38.6
+2002,0,"Ganze Stadt",38.6
+2003,0,"Ganze Stadt",38.7
+2004,0,"Ganze Stadt",38.7
+2005,0,"Ganze Stadt",38.7
+2006,0,"Ganze Stadt",38.7
+2007,0,"Ganze Stadt",38.4
+2008,0,"Ganze Stadt",38.3
+2009,0,"Ganze Stadt",38.2
+2010,0,"Ganze Stadt",38.2
+2011,0,"Ganze Stadt",38.1
+2012,0,"Ganze Stadt",38
+2013,0,"Ganze Stadt",37.9
+2014,0,"Ganze Stadt",37.8
+2015,0,"Ganze Stadt",37.7
+2016,0,"Ganze Stadt",37.7
+2017,0,"Ganze Stadt",37.6
+2018,0,"Ganze Stadt",37.6
+2019,0,"Ganze Stadt",37.6
+2020,0,"Ganze Stadt",37.7
+2021,0,"Ganze Stadt",37.7
+2022,0,"Ganze Stadt",37.6
+2023,0,"Ganze Stadt",37.7
+2024,0,"Ganze Stadt",37.9
+1993,1,"Kreis 1",38.8
+1994,1,"Kreis 1",38.7
+1995,1,"Kreis 1",38.6
+1996,1,"Kreis 1",38.4
+1997,1,"Kreis 1",38.7
+1998,1,"Kreis 1",39.3
+1999,1,"Kreis 1",39.5
+2000,1,"Kreis 1",39.5
+2001,1,"Kreis 1",39.7
+2002,1,"Kreis 1",40
+2003,1,"Kreis 1",40.2
+2004,1,"Kreis 1",40.2
+2005,1,"Kreis 1",40.9
+2006,1,"Kreis 1",40.8
+2007,1,"Kreis 1",41.2
+2008,1,"Kreis 1",41.7
+2009,1,"Kreis 1",41.7
+2010,1,"Kreis 1",41.5
+2011,1,"Kreis 1",41.8
+2012,1,"Kreis 1",41.7
+2013,1,"Kreis 1",41.7
+2014,1,"Kreis 1",41.4
+2015,1,"Kreis 1",41.3
+2016,1,"Kreis 1",41.7
+2017,1,"Kreis 1",41.3
+2018,1,"Kreis 1",40.9
+2019,1,"Kreis 1",40.7
+2020,1,"Kreis 1",40.8
+2021,1,"Kreis 1",40.5
+2022,1,"Kreis 1",40.1
+2023,1,"Kreis 1",40.1
+2024,1,"Kreis 1",39.9
+1993,2,"Kreis 2",43.1
+1994,2,"Kreis 2",42.9
+1995,2,"Kreis 2",42.5
+1996,2,"Kreis 2",42.4
+1997,2,"Kreis 2",42
+1998,2,"Kreis 2",41.7
+1999,2,"Kreis 2",41.3
+2000,2,"Kreis 2",41
+2001,2,"Kreis 2",41
+2002,2,"Kreis 2",40.6
+2003,2,"Kreis 2",40.8
+2004,2,"Kreis 2",40.8
+2005,2,"Kreis 2",40.8
+2006,2,"Kreis 2",40.9
+2007,2,"Kreis 2",40.6
+2008,2,"Kreis 2",40.8
+2009,2,"Kreis 2",40.5
+2010,2,"Kreis 2",40.2
+2011,2,"Kreis 2",40.1
+2012,2,"Kreis 2",40.1
+2013,2,"Kreis 2",39.8
+2014,2,"Kreis 2",39.5
+2015,2,"Kreis 2",39
+2016,2,"Kreis 2",38.8
+2017,2,"Kreis 2",38.3
+2018,2,"Kreis 2",38
+2019,2,"Kreis 2",38.1
+2020,2,"Kreis 2",38.1
+2021,2,"Kreis 2",38
+2022,2,"Kreis 2",38
+2023,2,"Kreis 2",38.1
+2024,2,"Kreis 2",38.2
+1993,3,"Kreis 3",37.7
+1994,3,"Kreis 3",37.5
+1995,3,"Kreis 3",37.3
+1996,3,"Kreis 3",37.2
+1997,3,"Kreis 3",37
+1998,3,"Kreis 3",36.7
+1999,3,"Kreis 3",36.6
+2000,3,"Kreis 3",36.5
+2001,3,"Kreis 3",36.7
+2002,3,"Kreis 3",36.7
+2003,3,"Kreis 3",36.9
+2004,3,"Kreis 3",37
+2005,3,"Kreis 3",36.7
+2006,3,"Kreis 3",36.7
+2007,3,"Kreis 3",36.5
+2008,3,"Kreis 3",36.4
+2009,3,"Kreis 3",36.3
+2010,3,"Kreis 3",36.6
+2011,3,"Kreis 3",36.6
+2012,3,"Kreis 3",36.4
+2013,3,"Kreis 3",36.5
+2014,3,"Kreis 3",36.6
+2015,3,"Kreis 3",36.6
+2016,3,"Kreis 3",36.7
+2017,3,"Kreis 3",36.7
+2018,3,"Kreis 3",36.7
+2019,3,"Kreis 3",36.8
+2020,3,"Kreis 3",36.9
+2021,3,"Kreis 3",37
+2022,3,"Kreis 3",36.8
+2023,3,"Kreis 3",36.7
+2024,3,"Kreis 3",36.8
+1993,4,"Kreis 4",35.9
+1994,4,"Kreis 4",35.7
+1995,4,"Kreis 4",35.8
+1996,4,"Kreis 4",35.7
+1997,4,"Kreis 4",35.6
+1998,4,"Kreis 4",35.4
+1999,4,"Kreis 4",35.2
+2000,4,"Kreis 4",35.3
+2001,4,"Kreis 4",35.3
+2002,4,"Kreis 4",35.3
+2003,4,"Kreis 4",35.5
+2004,4,"Kreis 4",35.5
+2005,4,"Kreis 4",35.5
+2006,4,"Kreis 4",35.7
+2007,4,"Kreis 4",35.5
+2008,4,"Kreis 4",35.5
+2009,4,"Kreis 4",35.5
+2010,4,"Kreis 4",35.7
+2011,4,"Kreis 4",35.9
+2012,4,"Kreis 4",35.9
+2013,4,"Kreis 4",35.9
+2014,4,"Kreis 4",36
+2015,4,"Kreis 4",36.2
+2016,4,"Kreis 4",36.3
+2017,4,"Kreis 4",36.2
+2018,4,"Kreis 4",36.1
+2019,4,"Kreis 4",35.7
+2020,4,"Kreis 4",35.9
+2021,4,"Kreis 4",35.9
+2022,4,"Kreis 4",35.8
+2023,4,"Kreis 4",35.9
+2024,4,"Kreis 4",36.1
+1993,5,"Kreis 5",33.9
+1994,5,"Kreis 5",34.2
+1995,5,"Kreis 5",34.1
+1996,5,"Kreis 5",34
+1997,5,"Kreis 5",34.2
+1998,5,"Kreis 5",34.4
+1999,5,"Kreis 5",34
+2000,5,"Kreis 5",33.9
+2001,5,"Kreis 5",34.4
+2002,5,"Kreis 5",34.5
+2003,5,"Kreis 5",34.7
+2004,5,"Kreis 5",34.8
+2005,5,"Kreis 5",35.2
+2006,5,"Kreis 5",35.3
+2007,5,"Kreis 5",35.6
+2008,5,"Kreis 5",36.2
+2009,5,"Kreis 5",36.3
+2010,5,"Kreis 5",36.5
+2011,5,"Kreis 5",36.2
+2012,5,"Kreis 5",36.2
+2013,5,"Kreis 5",36.2
+2014,5,"Kreis 5",36.3
+2015,5,"Kreis 5",36
+2016,5,"Kreis 5",36.2
+2017,5,"Kreis 5",36.3
+2018,5,"Kreis 5",36.4
+2019,5,"Kreis 5",36.5
+2020,5,"Kreis 5",36.8
+2021,5,"Kreis 5",36.6
+2022,5,"Kreis 5",37
+2023,5,"Kreis 5",37.4
+2024,5,"Kreis 5",37.9
+1993,6,"Kreis 6",39.3
+1994,6,"Kreis 6",38.9
+1995,6,"Kreis 6",38.9
+1996,6,"Kreis 6",38.6
+1997,6,"Kreis 6",38.3
+1998,6,"Kreis 6",38.1
+1999,6,"Kreis 6",38
+2000,6,"Kreis 6",37.9
+2001,6,"Kreis 6",38
+2002,6,"Kreis 6",37.9
+2003,6,"Kreis 6",37.9
+2004,6,"Kreis 6",38.1
+2005,6,"Kreis 6",38
+2006,6,"Kreis 6",38
+2007,6,"Kreis 6",37.8
+2008,6,"Kreis 6",37.6
+2009,6,"Kreis 6",37.6
+2010,6,"Kreis 6",37.5
+2011,6,"Kreis 6",37.5
+2012,6,"Kreis 6",37.6
+2013,6,"Kreis 6",37.3
+2014,6,"Kreis 6",37.1
+2015,6,"Kreis 6",37.2
+2016,6,"Kreis 6",37.3
+2017,6,"Kreis 6",37.3
+2018,6,"Kreis 6",37.3
+2019,6,"Kreis 6",36.9
+2020,6,"Kreis 6",36.8
+2021,6,"Kreis 6",36.7
+2022,6,"Kreis 6",36.6
+2023,6,"Kreis 6",37
+2024,6,"Kreis 6",37
+1993,7,"Kreis 7",43.2
+1994,7,"Kreis 7",43.3
+1995,7,"Kreis 7",43.3
+1996,7,"Kreis 7",43
+1997,7,"Kreis 7",42.9
+1998,7,"Kreis 7",43
+1999,7,"Kreis 7",42.8
+2000,7,"Kreis 7",43.1
+2001,7,"Kreis 7",43
+2002,7,"Kreis 7",43.4
+2003,7,"Kreis 7",43.5
+2004,7,"Kreis 7",43.4
+2005,7,"Kreis 7",43.4
+2006,7,"Kreis 7",43.5
+2007,7,"Kreis 7",43.1
+2008,7,"Kreis 7",43
+2009,7,"Kreis 7",43.1
+2010,7,"Kreis 7",42.9
+2011,7,"Kreis 7",42.9
+2012,7,"Kreis 7",43
+2013,7,"Kreis 7",42.9
+2014,7,"Kreis 7",42.8
+2015,7,"Kreis 7",42.6
+2016,7,"Kreis 7",42.8
+2017,7,"Kreis 7",42.6
+2018,7,"Kreis 7",42.6
+2019,7,"Kreis 7",42.5
+2020,7,"Kreis 7",42.5
+2021,7,"Kreis 7",42.6
+2022,7,"Kreis 7",42.6
+2023,7,"Kreis 7",42.6
+2024,7,"Kreis 7",42.7
+1993,8,"Kreis 8",39.4
+1994,8,"Kreis 8",39.3
+1995,8,"Kreis 8",39.1
+1996,8,"Kreis 8",39.1
+1997,8,"Kreis 8",39.2
+1998,8,"Kreis 8",38.9
+1999,8,"Kreis 8",39.1
+2000,8,"Kreis 8",39
+2001,8,"Kreis 8",39
+2002,8,"Kreis 8",39
+2003,8,"Kreis 8",39.2
+2004,8,"Kreis 8",39.4
+2005,8,"Kreis 8",39.6
+2006,8,"Kreis 8",39.7
+2007,8,"Kreis 8",39.5
+2008,8,"Kreis 8",39.6
+2009,8,"Kreis 8",40.2
+2010,8,"Kreis 8",39.8
+2011,8,"Kreis 8",40
+2012,8,"Kreis 8",40.2
+2013,8,"Kreis 8",40.1
+2014,8,"Kreis 8",40.1
+2015,8,"Kreis 8",40.3
+2016,8,"Kreis 8",40.1
+2017,8,"Kreis 8",40.5
+2018,8,"Kreis 8",40.2
+2019,8,"Kreis 8",40.2
+2020,8,"Kreis 8",40
+2021,8,"Kreis 8",39.8
+2022,8,"Kreis 8",40
+2023,8,"Kreis 8",39.9
+2024,8,"Kreis 8",40
+1993,9,"Kreis 9",42.7
+1994,9,"Kreis 9",42.5
+1995,9,"Kreis 9",42.4
+1996,9,"Kreis 9",42.5
+1997,9,"Kreis 9",42.3
+1998,9,"Kreis 9",42.1
+1999,9,"Kreis 9",42.1
+2000,9,"Kreis 9",41.7
+2001,9,"Kreis 9",41.3
+2002,9,"Kreis 9",41.1
+2003,9,"Kreis 9",41.3
+2004,9,"Kreis 9",41.4
+2005,9,"Kreis 9",41.4
+2006,9,"Kreis 9",41.2
+2007,9,"Kreis 9",40.9
+2008,9,"Kreis 9",40.5
+2009,9,"Kreis 9",40.3
+2010,9,"Kreis 9",40
+2011,9,"Kreis 9",39.4
+2012,9,"Kreis 9",39.3
+2013,9,"Kreis 9",39.4
+2014,9,"Kreis 9",39.4
+2015,9,"Kreis 9",39.4
+2016,9,"Kreis 9",38.9
+2017,9,"Kreis 9",38.5
+2018,9,"Kreis 9",38.3
+2019,9,"Kreis 9",38.1
+2020,9,"Kreis 9",38.3
+2021,9,"Kreis 9",38.4
+2022,9,"Kreis 9",38.3
+2023,9,"Kreis 9",38.3
+2024,9,"Kreis 9",38.5
+1993,10,"Kreis 10",40.7
+1994,10,"Kreis 10",40.8
+1995,10,"Kreis 10",40.9
+1996,10,"Kreis 10",40.6
+1997,10,"Kreis 10",40.6
+1998,10,"Kreis 10",40.4
+1999,10,"Kreis 10",40
+2000,10,"Kreis 10",39.8
+2001,10,"Kreis 10",39.7
+2002,10,"Kreis 10",39.8
+2003,10,"Kreis 10",39.8
+2004,10,"Kreis 10",39.9
+2005,10,"Kreis 10",39.9
+2006,10,"Kreis 10",40
+2007,10,"Kreis 10",40.1
+2008,10,"Kreis 10",40
+2009,10,"Kreis 10",40
+2010,10,"Kreis 10",40
+2011,10,"Kreis 10",39.9
+2012,10,"Kreis 10",39.8
+2013,10,"Kreis 10",39.9
+2014,10,"Kreis 10",39.8
+2015,10,"Kreis 10",39.4
+2016,10,"Kreis 10",38.9
+2017,10,"Kreis 10",38.7
+2018,10,"Kreis 10",38.9
+2019,10,"Kreis 10",39.1
+2020,10,"Kreis 10",39.1
+2021,10,"Kreis 10",39.3
+2022,10,"Kreis 10",39.4
+2023,10,"Kreis 10",39.6
+2024,10,"Kreis 10",39.8
+1993,11,"Rathaus",38.8
+1993,11,"Kreis 11",39.5
+1994,11,"Rathaus",38.8
+1994,11,"Kreis 11",39.4
+1995,11,"Rathaus",38.6
+1995,11,"Kreis 11",39
+1996,11,"Rathaus",38.5
+1996,11,"Kreis 11",39
+1997,11,"Rathaus",38.5
+1997,11,"Kreis 11",38.7
+1998,11,"Rathaus",39.4
+1998,11,"Kreis 11",38.2
+1999,11,"Rathaus",39.6
+1999,11,"Kreis 11",37.9
+2000,11,"Rathaus",39.2
+2000,11,"Kreis 11",37.8
+2001,11,"Rathaus",39.6
+2001,11,"Kreis 11",37.4
+2002,11,"Rathaus",39.9
+2002,11,"Kreis 11",37.2
+2003,11,"Rathaus",40.2
+2003,11,"Kreis 11",37
+2004,11,"Rathaus",40.2
+2004,11,"Kreis 11",37.1
+2005,11,"Rathaus",40.9
+2005,11,"Kreis 11",37.1
+2006,11,"Rathaus",40.8
+2006,11,"Kreis 11",36.8
+2007,11,"Rathaus",40.8
+2007,11,"Kreis 11",36
+2008,11,"Rathaus",41.3
+2008,11,"Kreis 11",35.8
+2009,11,"Rathaus",41
+2009,11,"Kreis 11",36
+2010,11,"Rathaus",40.5
+2010,11,"Kreis 11",35.9
+2011,11,"Rathaus",41.1
+2011,11,"Kreis 11",35.7
+2012,11,"Rathaus",40.6
+2012,11,"Kreis 11",35.6
+2013,11,"Rathaus",40.5
+2013,11,"Kreis 11",35.6
+2014,11,"Rathaus",40.4
+2014,11,"Kreis 11",35.5
+2015,11,"Rathaus",40.7
+2015,11,"Kreis 11",35.6
+2016,11,"Rathaus",41
+2016,11,"Kreis 11",35.8
+2017,11,"Rathaus",41.2
+2017,11,"Kreis 11",35.7
+2018,11,"Rathaus",41
+2018,11,"Kreis 11",35.8
+2019,11,"Rathaus",40.6
+2019,11,"Kreis 11",35.9
+2020,11,"Rathaus",41.1
+2020,11,"Kreis 11",36
+2021,11,"Rathaus",40.9
+2021,11,"Kreis 11",35.9
+2022,11,"Rathaus",40.2
+2022,11,"Kreis 11",35.9
+2023,11,"Rathaus",40.2
+2023,11,"Kreis 11",36
+2024,11,"Rathaus",40.1
+2024,11,"Kreis 11",36.1
+1993,12,"Hochschulen",34.6
+1993,12,"Kreis 12",40.4
+1994,12,"Hochschulen",34.5
+1994,12,"Kreis 12",40.2
+1995,12,"Hochschulen",37.1
+1995,12,"Kreis 12",39.9
+1996,12,"Hochschulen",36.9
+1996,12,"Kreis 12",40
+1997,12,"Hochschulen",36.4
+1997,12,"Kreis 12",39.6
+1998,12,"Hochschulen",37
+1998,12,"Kreis 12",39.3
+1999,12,"Hochschulen",37.5
+1999,12,"Kreis 12",39
+2000,12,"Hochschulen",37.4
+2000,12,"Kreis 12",38.8
+2001,12,"Hochschulen",38
+2001,12,"Kreis 12",38.7
+2002,12,"Hochschulen",38
+2002,12,"Kreis 12",38.5
+2003,12,"Hochschulen",38.6
+2003,12,"Kreis 12",38.6
+2004,12,"Hochschulen",39.4
+2004,12,"Kreis 12",38.2
+2005,12,"Hochschulen",39
+2005,12,"Kreis 12",38
+2006,12,"Hochschulen",38.9
+2006,12,"Kreis 12",37.7
+2007,12,"Hochschulen",40.1
+2007,12,"Kreis 12",36.9
+2008,12,"Hochschulen",41.3
+2008,12,"Kreis 12",36.7
+2009,12,"Hochschulen",40.3
+2009,12,"Kreis 12",36.4
+2010,12,"Hochschulen",39.1
+2010,12,"Kreis 12",36.7
+2011,12,"Hochschulen",39.6
+2011,12,"Kreis 12",36.5
+2012,12,"Hochschulen",40
+2012,12,"Kreis 12",36.6
+2013,12,"Hochschulen",40
+2013,12,"Kreis 12",36.6
+2014,12,"Hochschulen",40.3
+2014,12,"Kreis 12",36
+2015,12,"Hochschulen",38.2
+2015,12,"Kreis 12",35.7
+2016,12,"Hochschulen",39.4
+2016,12,"Kreis 12",35.8
+2017,12,"Hochschulen",38.4
+2017,12,"Kreis 12",36
+2018,12,"Hochschulen",38.4
+2018,12,"Kreis 12",35.7
+2019,12,"Hochschulen",36.8
+2019,12,"Kreis 12",35.5
+2020,12,"Hochschulen",36.6
+2020,12,"Kreis 12",36
+2021,12,"Hochschulen",35.4
+2021,12,"Kreis 12",36.2
+2022,12,"Hochschulen",34.5
+2022,12,"Kreis 12",36.3
+2023,12,"Hochschulen",33.4
+2023,12,"Kreis 12",36.2
+2024,12,"Hochschulen",33.2
+2024,12,"Kreis 12",36.5
+1993,13,"Lindenhof",42.4
+1994,13,"Lindenhof",41.8
+1995,13,"Lindenhof",42
+1996,13,"Lindenhof",42.4
+1997,13,"Lindenhof",43.1
+1998,13,"Lindenhof",43.3
+1999,13,"Lindenhof",43.1
+2000,13,"Lindenhof",44.3
+2001,13,"Lindenhof",44.2
+2002,13,"Lindenhof",44.4
+2003,13,"Lindenhof",44.7
+2004,13,"Lindenhof",44.3
+2005,13,"Lindenhof",45.3
+2006,13,"Lindenhof",44.4
+2007,13,"Lindenhof",45.4
+2008,13,"Lindenhof",45.9
+2009,13,"Lindenhof",45.9
+2010,13,"Lindenhof",45.8
+2011,13,"Lindenhof",45.3
+2012,13,"Lindenhof",46.1
+2013,13,"Lindenhof",46.6
+2014,13,"Lindenhof",45.2
+2015,13,"Lindenhof",44.4
+2016,13,"Lindenhof",44.3
+2017,13,"Lindenhof",43.9
+2018,13,"Lindenhof",43.3
+2019,13,"Lindenhof",43.3
+2020,13,"Lindenhof",43
+2021,13,"Lindenhof",43.5
+2022,13,"Lindenhof",42.9
+2023,13,"Lindenhof",43.1
+2024,13,"Lindenhof",43.2
+1993,14,"City",37.5
+1994,14,"City",37.3
+1995,14,"City",36
+1996,14,"City",35.6
+1997,14,"City",36.4
+1998,14,"City",37
+1999,14,"City",37.5
+2000,14,"City",38.1
+2001,14,"City",38
+2002,14,"City",38.5
+2003,14,"City",38.1
+2004,14,"City",38.2
+2005,14,"City",38.2
+2006,14,"City",38.1
+2007,14,"City",38.6
+2008,14,"City",39.7
+2009,14,"City",40.4
+2010,14,"City",41.1
+2011,14,"City",42.2
+2012,14,"City",41.4
+2013,14,"City",42
+2014,14,"City",41.5
+2015,14,"City",41.3
+2016,14,"City",42.1
+2017,14,"City",40.2
+2018,14,"City",39.6
+2019,14,"City",40
+2020,14,"City",39.7
+2021,14,"City",39.7
+2022,14,"City",40
+2023,14,"City",39.8
+2024,14,"City",38.8
+1993,21,"Wollishofen",44.5
+1994,21,"Wollishofen",44.3
+1995,21,"Wollishofen",43.9
+1996,21,"Wollishofen",43.5
+1997,21,"Wollishofen",43.3
+1998,21,"Wollishofen",43
+1999,21,"Wollishofen",42.4
+2000,21,"Wollishofen",42.1
+2001,21,"Wollishofen",42
+2002,21,"Wollishofen",41.7
+2003,21,"Wollishofen",41.7
+2004,21,"Wollishofen",41.7
+2005,21,"Wollishofen",42
+2006,21,"Wollishofen",41.9
+2007,21,"Wollishofen",41.7
+2008,21,"Wollishofen",41.7
+2009,21,"Wollishofen",41.4
+2010,21,"Wollishofen",41.2
+2011,21,"Wollishofen",41
+2012,21,"Wollishofen",41
+2013,21,"Wollishofen",41.1
+2014,21,"Wollishofen",40.9
+2015,21,"Wollishofen",40.7
+2016,21,"Wollishofen",40.4
+2017,21,"Wollishofen",39.1
+2018,21,"Wollishofen",38.5
+2019,21,"Wollishofen",38.6
+2020,21,"Wollishofen",38.5
+2021,21,"Wollishofen",38.4
+2022,21,"Wollishofen",38.5
+2023,21,"Wollishofen",38.4
+2024,21,"Wollishofen",38.4
+1993,23,"Leimbach",43.8
+1994,23,"Leimbach",43.8
+1995,23,"Leimbach",43.7
+1996,23,"Leimbach",44.3
+1997,23,"Leimbach",44.4
+1998,23,"Leimbach",43.5
+1999,23,"Leimbach",43.2
+2000,23,"Leimbach",43
+2001,23,"Leimbach",43.1
+2002,23,"Leimbach",42.9
+2003,23,"Leimbach",43.6
+2004,23,"Leimbach",43.4
+2005,23,"Leimbach",42.6
+2006,23,"Leimbach",42.4
+2007,23,"Leimbach",41.3
+2008,23,"Leimbach",41.5
+2009,23,"Leimbach",41.5
+2010,23,"Leimbach",41.3
+2011,23,"Leimbach",40.7
+2012,23,"Leimbach",40.5
+2013,23,"Leimbach",39.2
+2014,23,"Leimbach",38.8
+2015,23,"Leimbach",37.6
+2016,23,"Leimbach",37.8
+2017,23,"Leimbach",38
+2018,23,"Leimbach",37.8
+2019,23,"Leimbach",38.5
+2020,23,"Leimbach",38.4
+2021,23,"Leimbach",38.4
+2022,23,"Leimbach",38.4
+2023,23,"Leimbach",39
+2024,23,"Leimbach",39.1
+1993,24,"Enge",40.2
+1994,24,"Enge",39.3
+1995,24,"Enge",39.2
+1996,24,"Enge",39.1
+1997,24,"Enge",38.8
+1998,24,"Enge",38.5
+1999,24,"Enge",38.2
+2000,24,"Enge",38.1
+2001,24,"Enge",38.2
+2002,24,"Enge",38
+2003,24,"Enge",38.2
+2004,24,"Enge",38.5
+2005,24,"Enge",38.4
+2006,24,"Enge",38.6
+2007,24,"Enge",38.5
+2008,24,"Enge",38.6
+2009,24,"Enge",38.6
+2010,24,"Enge",38.5
+2011,24,"Enge",38.5
+2012,24,"Enge",38.3
+2013,24,"Enge",37.9
+2014,24,"Enge",37.8
+2015,24,"Enge",37.4
+2016,24,"Enge",37.2
+2017,24,"Enge",37
+2018,24,"Enge",37.1
+2019,24,"Enge",37
+2020,24,"Enge",37.1
+2021,24,"Enge",37.1
+2022,24,"Enge",36.9
+2023,24,"Enge",37.1
+2024,24,"Enge",37.3
+1993,31,"Alt-Wiedikon",37.2
+1994,31,"Alt-Wiedikon",36.9
+1995,31,"Alt-Wiedikon",36.7
+1996,31,"Alt-Wiedikon",36.4
+1997,31,"Alt-Wiedikon",36.1
+1998,31,"Alt-Wiedikon",35.9
+1999,31,"Alt-Wiedikon",35.9
+2000,31,"Alt-Wiedikon",36
+2001,31,"Alt-Wiedikon",36.1
+2002,31,"Alt-Wiedikon",36.2
+2003,31,"Alt-Wiedikon",36.4
+2004,31,"Alt-Wiedikon",36.3
+2005,31,"Alt-Wiedikon",36.2
+2006,31,"Alt-Wiedikon",36.2
+2007,31,"Alt-Wiedikon",35.9
+2008,31,"Alt-Wiedikon",35.8
+2009,31,"Alt-Wiedikon",35.9
+2010,31,"Alt-Wiedikon",35.9
+2011,31,"Alt-Wiedikon",36.3
+2012,31,"Alt-Wiedikon",36.1
+2013,31,"Alt-Wiedikon",36.3
+2014,31,"Alt-Wiedikon",36.4
+2015,31,"Alt-Wiedikon",36.3
+2016,31,"Alt-Wiedikon",36.4
+2017,31,"Alt-Wiedikon",36.4
+2018,31,"Alt-Wiedikon",36
+2019,31,"Alt-Wiedikon",36
+2020,31,"Alt-Wiedikon",36.2
+2021,31,"Alt-Wiedikon",36.2
+2022,31,"Alt-Wiedikon",35.7
+2023,31,"Alt-Wiedikon",35.9
+2024,31,"Alt-Wiedikon",35.8
+1993,33,"Friesenberg",39.9
+1994,33,"Friesenberg",40
+1995,33,"Friesenberg",39.8
+1996,33,"Friesenberg",40.1
+1997,33,"Friesenberg",40.1
+1998,33,"Friesenberg",40.1
+1999,33,"Friesenberg",40.2
+2000,33,"Friesenberg",39.6
+2001,33,"Friesenberg",39.7
+2002,33,"Friesenberg",39.3
+2003,33,"Friesenberg",39
+2004,33,"Friesenberg",39.2
+2005,33,"Friesenberg",38.7
+2006,33,"Friesenberg",38.8
+2007,33,"Friesenberg",39
+2008,33,"Friesenberg",39.2
+2009,33,"Friesenberg",38.2
+2010,33,"Friesenberg",39.3
+2011,33,"Friesenberg",39
+2012,33,"Friesenberg",38.3
+2013,33,"Friesenberg",38.9
+2014,33,"Friesenberg",38.8
+2015,33,"Friesenberg",39.2
+2016,33,"Friesenberg",39.3
+2017,33,"Friesenberg",39.7
+2018,33,"Friesenberg",40
+2019,33,"Friesenberg",40.2
+2020,33,"Friesenberg",40.5
+2021,33,"Friesenberg",41
+2022,33,"Friesenberg",41
+2023,33,"Friesenberg",40.7
+2024,33,"Friesenberg",40.7
+1993,34,"Sihlfeld",37.1
+1994,34,"Sihlfeld",36.9
+1995,34,"Sihlfeld",36.7
+1996,34,"Sihlfeld",36.6
+1997,34,"Sihlfeld",36.3
+1998,34,"Sihlfeld",36
+1999,34,"Sihlfeld",35.8
+2000,34,"Sihlfeld",35.9
+2001,34,"Sihlfeld",36.1
+2002,34,"Sihlfeld",36.2
+2003,34,"Sihlfeld",36.5
+2004,34,"Sihlfeld",36.6
+2005,34,"Sihlfeld",36.5
+2006,34,"Sihlfeld",36.3
+2007,34,"Sihlfeld",36
+2008,34,"Sihlfeld",35.9
+2009,34,"Sihlfeld",35.9
+2010,34,"Sihlfeld",36.2
+2011,34,"Sihlfeld",36
+2012,34,"Sihlfeld",35.9
+2013,34,"Sihlfeld",36
+2014,34,"Sihlfeld",36
+2015,34,"Sihlfeld",35.9
+2016,34,"Sihlfeld",36.2
+2017,34,"Sihlfeld",36.1
+2018,34,"Sihlfeld",36.2
+2019,34,"Sihlfeld",36.3
+2020,34,"Sihlfeld",36.5
+2021,34,"Sihlfeld",36.6
+2022,34,"Sihlfeld",36.4
+2023,34,"Sihlfeld",36.5
+2024,34,"Sihlfeld",36.7
+1993,41,"Werd",34.2
+1994,41,"Werd",33.9
+1995,41,"Werd",34
+1996,41,"Werd",34.1
+1997,41,"Werd",33.9
+1998,41,"Werd",33.7
+1999,41,"Werd",33.5
+2000,41,"Werd",33.8
+2001,41,"Werd",34.3
+2002,41,"Werd",34.2
+2003,41,"Werd",34.3
+2004,41,"Werd",34.3
+2005,41,"Werd",34.5
+2006,41,"Werd",34.5
+2007,41,"Werd",34.7
+2008,41,"Werd",34.9
+2009,41,"Werd",35
+2010,41,"Werd",34.9
+2011,41,"Werd",34.9
+2012,41,"Werd",35.2
+2013,41,"Werd",35.4
+2014,41,"Werd",35.6
+2015,41,"Werd",35.8
+2016,41,"Werd",35.7
+2017,41,"Werd",35.8
+2018,41,"Werd",35.7
+2019,41,"Werd",35.4
+2020,41,"Werd",35.1
+2021,41,"Werd",35.1
+2022,41,"Werd",35.4
+2023,41,"Werd",35.3
+2024,41,"Werd",35.6
+1993,42,"Langstrasse",34.2
+1994,42,"Langstrasse",34.3
+1995,42,"Langstrasse",34.5
+1996,42,"Langstrasse",34.7
+1997,42,"Langstrasse",34.7
+1998,42,"Langstrasse",34.7
+1999,42,"Langstrasse",34.7
+2000,42,"Langstrasse",34.7
+2001,42,"Langstrasse",34.7
+2002,42,"Langstrasse",34.8
+2003,42,"Langstrasse",35.1
+2004,42,"Langstrasse",35.2
+2005,42,"Langstrasse",35.2
+2006,42,"Langstrasse",35.6
+2007,42,"Langstrasse",35.7
+2008,42,"Langstrasse",35.8
+2009,42,"Langstrasse",35.8
+2010,42,"Langstrasse",36
+2011,42,"Langstrasse",36.1
+2012,42,"Langstrasse",36.2
+2013,42,"Langstrasse",36.4
+2014,42,"Langstrasse",36.3
+2015,42,"Langstrasse",36.5
+2016,42,"Langstrasse",36.6
+2017,42,"Langstrasse",36.3
+2018,42,"Langstrasse",36.2
+2019,42,"Langstrasse",35.7
+2020,42,"Langstrasse",35.8
+2021,42,"Langstrasse",36
+2022,42,"Langstrasse",35.9
+2023,42,"Langstrasse",36.2
+2024,42,"Langstrasse",36.5
+1993,44,"Hard",38.8
+1994,44,"Hard",38.3
+1995,44,"Hard",38
+1996,44,"Hard",37.5
+1997,44,"Hard",37.3
+1998,44,"Hard",36.9
+1999,44,"Hard",36.4
+2000,44,"Hard",36.6
+2001,44,"Hard",36.4
+2002,44,"Hard",36.4
+2003,44,"Hard",36.4
+2004,44,"Hard",36.2
+2005,44,"Hard",36.3
+2006,44,"Hard",36.3
+2007,44,"Hard",35.7
+2008,44,"Hard",35.5
+2009,44,"Hard",35.4
+2010,44,"Hard",35.7
+2011,44,"Hard",36
+2012,44,"Hard",35.8
+2013,44,"Hard",35.8
+2014,44,"Hard",35.8
+2015,44,"Hard",36
+2016,44,"Hard",36.2
+2017,44,"Hard",36.2
+2018,44,"Hard",36.1
+2019,44,"Hard",35.7
+2020,44,"Hard",36.3
+2021,44,"Hard",36.1
+2022,44,"Hard",35.8
+2023,44,"Hard",35.9
+2024,44,"Hard",36
+1993,51,"Gewerbeschule",33.6
+1994,51,"Gewerbeschule",33.9
+1995,51,"Gewerbeschule",33.9
+1996,51,"Gewerbeschule",33.8
+1997,51,"Gewerbeschule",34
+1998,51,"Gewerbeschule",34.2
+1999,51,"Gewerbeschule",33.9
+2000,51,"Gewerbeschule",33.7
+2001,51,"Gewerbeschule",34.2
+2002,51,"Gewerbeschule",34.3
+2003,51,"Gewerbeschule",34.4
+2004,51,"Gewerbeschule",34.6
+2005,51,"Gewerbeschule",34.9
+2006,51,"Gewerbeschule",35
+2007,51,"Gewerbeschule",35.4
+2008,51,"Gewerbeschule",35.9
+2009,51,"Gewerbeschule",36.1
+2010,51,"Gewerbeschule",36.3
+2011,51,"Gewerbeschule",35.9
+2012,51,"Gewerbeschule",36.1
+2013,51,"Gewerbeschule",36.4
+2014,51,"Gewerbeschule",36.7
+2015,51,"Gewerbeschule",36.7
+2016,51,"Gewerbeschule",36.9
+2017,51,"Gewerbeschule",37.1
+2018,51,"Gewerbeschule",36.9
+2019,51,"Gewerbeschule",36.7
+2020,51,"Gewerbeschule",36.9
+2021,51,"Gewerbeschule",36.6
+2022,51,"Gewerbeschule",36.8
+2023,51,"Gewerbeschule",37.4
+2024,51,"Gewerbeschule",37.7
+1993,52,"Escher Wyss",36.8
+1994,52,"Escher Wyss",36
+1995,52,"Escher Wyss",35.2
+1996,52,"Escher Wyss",35.4
+1997,52,"Escher Wyss",36.1
+1998,52,"Escher Wyss",35.6
+1999,52,"Escher Wyss",34.6
+2000,52,"Escher Wyss",35.1
+2001,52,"Escher Wyss",35.6
+2002,52,"Escher Wyss",35
+2003,52,"Escher Wyss",35.5
+2004,52,"Escher Wyss",35.7
+2005,52,"Escher Wyss",35.9
+2006,52,"Escher Wyss",36
+2007,52,"Escher Wyss",36.4
+2008,52,"Escher Wyss",36.8
+2009,52,"Escher Wyss",36.8
+2010,52,"Escher Wyss",36.8
+2011,52,"Escher Wyss",37.1
+2012,52,"Escher Wyss",36.5
+2013,52,"Escher Wyss",35.9
+2014,52,"Escher Wyss",35.7
+2015,52,"Escher Wyss",35.2
+2016,52,"Escher Wyss",35.2
+2017,52,"Escher Wyss",35.5
+2018,52,"Escher Wyss",36
+2019,52,"Escher Wyss",36.3
+2020,52,"Escher Wyss",36.6
+2021,52,"Escher Wyss",36.6
+2022,52,"Escher Wyss",37.2
+2023,52,"Escher Wyss",37.5
+2024,52,"Escher Wyss",38.1
+1993,61,"Unterstrass",39.4
+1994,61,"Unterstrass",38.9
+1995,61,"Unterstrass",38.7
+1996,61,"Unterstrass",38.3
+1997,61,"Unterstrass",37.9
+1998,61,"Unterstrass",37.7
+1999,61,"Unterstrass",37.6
+2000,61,"Unterstrass",37.4
+2001,61,"Unterstrass",37.5
+2002,61,"Unterstrass",37.3
+2003,61,"Unterstrass",37.4
+2004,61,"Unterstrass",37.6
+2005,61,"Unterstrass",37.5
+2006,61,"Unterstrass",37.5
+2007,61,"Unterstrass",37.3
+2008,61,"Unterstrass",37
+2009,61,"Unterstrass",36.9
+2010,61,"Unterstrass",36.9
+2011,61,"Unterstrass",37
+2012,61,"Unterstrass",37.1
+2013,61,"Unterstrass",36.6
+2014,61,"Unterstrass",36.5
+2015,61,"Unterstrass",36.7
+2016,61,"Unterstrass",36.7
+2017,61,"Unterstrass",36.7
+2018,61,"Unterstrass",36.7
+2019,61,"Unterstrass",36.2
+2020,61,"Unterstrass",36.1
+2021,61,"Unterstrass",36.1
+2022,61,"Unterstrass",36
+2023,61,"Unterstrass",36.3
+2024,61,"Unterstrass",36.5
+1993,63,"Oberstrass",39
+1994,63,"Oberstrass",39
+1995,63,"Oberstrass",39.5
+1996,63,"Oberstrass",39.1
+1997,63,"Oberstrass",39
+1998,63,"Oberstrass",38.9
+1999,63,"Oberstrass",38.9
+2000,63,"Oberstrass",38.9
+2001,63,"Oberstrass",39.2
+2002,63,"Oberstrass",39.1
+2003,63,"Oberstrass",39.1
+2004,63,"Oberstrass",39.2
+2005,63,"Oberstrass",39.3
+2006,63,"Oberstrass",39.3
+2007,63,"Oberstrass",39.1
+2008,63,"Oberstrass",39
+2009,63,"Oberstrass",39.1
+2010,63,"Oberstrass",38.9
+2011,63,"Oberstrass",39
+2012,63,"Oberstrass",39.2
+2013,63,"Oberstrass",39
+2014,63,"Oberstrass",38.7
+2015,63,"Oberstrass",38.6
+2016,63,"Oberstrass",38.7
+2017,63,"Oberstrass",38.7
+2018,63,"Oberstrass",38.6
+2019,63,"Oberstrass",38.8
+2020,63,"Oberstrass",38.9
+2021,63,"Oberstrass",38.5
+2022,63,"Oberstrass",38.6
+2023,63,"Oberstrass",38.7
+2024,63,"Oberstrass",38.4
+1993,71,"Fluntern",42.9
+1994,71,"Fluntern",42.8
+1995,71,"Fluntern",42.6
+1996,71,"Fluntern",42.8
+1997,71,"Fluntern",42.3
+1998,71,"Fluntern",42
+1999,71,"Fluntern",42
+2000,71,"Fluntern",42.6
+2001,71,"Fluntern",42.7
+2002,71,"Fluntern",43.2
+2003,71,"Fluntern",43.3
+2004,71,"Fluntern",43.1
+2005,71,"Fluntern",43.1
+2006,71,"Fluntern",42.8
+2007,71,"Fluntern",42.3
+2008,71,"Fluntern",42.3
+2009,71,"Fluntern",42.5
+2010,71,"Fluntern",42.4
+2011,71,"Fluntern",42.2
+2012,71,"Fluntern",42.4
+2013,71,"Fluntern",42.6
+2014,71,"Fluntern",42.9
+2015,71,"Fluntern",42.6
+2016,71,"Fluntern",42.7
+2017,71,"Fluntern",42.7
+2018,71,"Fluntern",42.6
+2019,71,"Fluntern",42.6
+2020,71,"Fluntern",42.6
+2021,71,"Fluntern",42.6
+2022,71,"Fluntern",42.9
+2023,71,"Fluntern",43.6
+2024,71,"Fluntern",43.7
+1993,72,"Hottingen",40
+1994,72,"Hottingen",39.6
+1995,72,"Hottingen",39.8
+1996,72,"Hottingen",39.5
+1997,72,"Hottingen",39.6
+1998,72,"Hottingen",39.7
+1999,72,"Hottingen",39.6
+2000,72,"Hottingen",39.7
+2001,72,"Hottingen",39.8
+2002,72,"Hottingen",40.5
+2003,72,"Hottingen",40.5
+2004,72,"Hottingen",40.9
+2005,72,"Hottingen",40.7
+2006,72,"Hottingen",40.8
+2007,72,"Hottingen",40.5
+2008,72,"Hottingen",40
+2009,72,"Hottingen",40.5
+2010,72,"Hottingen",40.3
+2011,72,"Hottingen",40.3
+2012,72,"Hottingen",40.5
+2013,72,"Hottingen",40.3
+2014,72,"Hottingen",40.1
+2015,72,"Hottingen",40
+2016,72,"Hottingen",40.2
+2017,72,"Hottingen",40.2
+2018,72,"Hottingen",40.3
+2019,72,"Hottingen",40.5
+2020,72,"Hottingen",40.7
+2021,72,"Hottingen",40.9
+2022,72,"Hottingen",40.6
+2023,72,"Hottingen",40.8
+2024,72,"Hottingen",41
+1993,73,"Hirslanden",43.3
+1994,73,"Hirslanden",43.6
+1995,73,"Hirslanden",43.6
+1996,73,"Hirslanden",42.7
+1997,73,"Hirslanden",42.4
+1998,73,"Hirslanden",42.2
+1999,73,"Hirslanden",41.6
+2000,73,"Hirslanden",41.8
+2001,73,"Hirslanden",41.7
+2002,73,"Hirslanden",41.7
+2003,73,"Hirslanden",42
+2004,73,"Hirslanden",41.9
+2005,73,"Hirslanden",42
+2006,73,"Hirslanden",42
+2007,73,"Hirslanden",41.9
+2008,73,"Hirslanden",42.2
+2009,73,"Hirslanden",42
+2010,73,"Hirslanden",41.7
+2011,73,"Hirslanden",41.7
+2012,73,"Hirslanden",41.6
+2013,73,"Hirslanden",41.5
+2014,73,"Hirslanden",41.2
+2015,73,"Hirslanden",41.3
+2016,73,"Hirslanden",41.5
+2017,73,"Hirslanden",40.7
+2018,73,"Hirslanden",41.1
+2019,73,"Hirslanden",41.1
+2020,73,"Hirslanden",41
+2021,73,"Hirslanden",41.3
+2022,73,"Hirslanden",41.1
+2023,73,"Hirslanden",40.7
+2024,73,"Hirslanden",40.6
+1993,74,"Witikon",46.7
+1994,74,"Witikon",47.3
+1995,74,"Witikon",47.7
+1996,74,"Witikon",48
+1997,74,"Witikon",48.6
+1998,74,"Witikon",49
+1999,74,"Witikon",49
+2000,74,"Witikon",48.9
+2001,74,"Witikon",48.8
+2002,74,"Witikon",48.8
+2003,74,"Witikon",49
+2004,74,"Witikon",48.8
+2005,74,"Witikon",48.5
+2006,74,"Witikon",48.3
+2007,74,"Witikon",47.9
+2008,74,"Witikon",47.6
+2009,74,"Witikon",47.4
+2010,74,"Witikon",47.8
+2011,74,"Witikon",47.6
+2012,74,"Witikon",47.6
+2013,74,"Witikon",47.2
+2014,74,"Witikon",47
+2015,74,"Witikon",46.7
+2016,74,"Witikon",47
+2017,74,"Witikon",47
+2018,74,"Witikon",46.1
+2019,74,"Witikon",45.7
+2020,74,"Witikon",45.4
+2021,74,"Witikon",45.5
+2022,74,"Witikon",45.2
+2023,74,"Witikon",44.9
+2024,74,"Witikon",45.1
+1993,81,"Seefeld",39
+1994,81,"Seefeld",38.6
+1995,81,"Seefeld",38.4
+1996,81,"Seefeld",38.3
+1997,81,"Seefeld",38
+1998,81,"Seefeld",38.1
+1999,81,"Seefeld",38.1
+2000,81,"Seefeld",38.1
+2001,81,"Seefeld",37.9
+2002,81,"Seefeld",37.5
+2003,81,"Seefeld",38.1
+2004,81,"Seefeld",38.8
+2005,81,"Seefeld",39.3
+2006,81,"Seefeld",39.1
+2007,81,"Seefeld",38.8
+2008,81,"Seefeld",39
+2009,81,"Seefeld",39.6
+2010,81,"Seefeld",39.3
+2011,81,"Seefeld",39.5
+2012,81,"Seefeld",39.3
+2013,81,"Seefeld",39.7
+2014,81,"Seefeld",39.7
+2015,81,"Seefeld",40.1
+2016,81,"Seefeld",39.7
+2017,81,"Seefeld",39.9
+2018,81,"Seefeld",39.7
+2019,81,"Seefeld",39.8
+2020,81,"Seefeld",39.8
+2021,81,"Seefeld",38.8
+2022,81,"Seefeld",39.2
+2023,81,"Seefeld",39.1
+2024,81,"Seefeld",39.2
+1993,82,"Mühlebach",39.6
+1994,82,"Mühlebach",39.6
+1995,82,"Mühlebach",39.2
+1996,82,"Mühlebach",39.4
+1997,82,"Mühlebach",39.6
+1998,82,"Mühlebach",38.9
+1999,82,"Mühlebach",39.2
+2000,82,"Mühlebach",39.1
+2001,82,"Mühlebach",39.1
+2002,82,"Mühlebach",39.2
+2003,82,"Mühlebach",39.3
+2004,82,"Mühlebach",39.1
+2005,82,"Mühlebach",39
+2006,82,"Mühlebach",39.3
+2007,82,"Mühlebach",39.2
+2008,82,"Mühlebach",39.3
+2009,82,"Mühlebach",39.9
+2010,82,"Mühlebach",39.7
+2011,82,"Mühlebach",39.9
+2012,82,"Mühlebach",39.9
+2013,82,"Mühlebach",39.9
+2014,82,"Mühlebach",39.8
+2015,82,"Mühlebach",39.7
+2016,82,"Mühlebach",39.7
+2017,82,"Mühlebach",40.5
+2018,82,"Mühlebach",40.2
+2019,82,"Mühlebach",40.4
+2020,82,"Mühlebach",40
+2021,82,"Mühlebach",40.2
+2022,82,"Mühlebach",40.7
+2023,82,"Mühlebach",40.5
+2024,82,"Mühlebach",40.6
+1993,83,"Weinegg",39.6
+1994,83,"Weinegg",39.6
+1995,83,"Weinegg",39.8
+1996,83,"Weinegg",39.7
+1997,83,"Weinegg",40
+1998,83,"Weinegg",39.9
+1999,83,"Weinegg",40.4
+2000,83,"Weinegg",40
+2001,83,"Weinegg",40
+2002,83,"Weinegg",40.2
+2003,83,"Weinegg",40.5
+2004,83,"Weinegg",40.6
+2005,83,"Weinegg",40.5
+2006,83,"Weinegg",40.8
+2007,83,"Weinegg",40.7
+2008,83,"Weinegg",40.8
+2009,83,"Weinegg",41.3
+2010,83,"Weinegg",40.8
+2011,83,"Weinegg",41.2
+2012,83,"Weinegg",41.7
+2013,83,"Weinegg",40.8
+2014,83,"Weinegg",41.1
+2015,83,"Weinegg",41.1
+2016,83,"Weinegg",41
+2017,83,"Weinegg",41.4
+2018,83,"Weinegg",41.1
+2019,83,"Weinegg",40.5
+2020,83,"Weinegg",40.2
+2021,83,"Weinegg",40.4
+2022,83,"Weinegg",40.3
+2023,83,"Weinegg",40.1
+2024,83,"Weinegg",40.1
+1993,91,"Albisrieden",46
+1994,91,"Albisrieden",45.8
+1995,91,"Albisrieden",45.7
+1996,91,"Albisrieden",45.7
+1997,91,"Albisrieden",45.7
+1998,91,"Albisrieden",45.5
+1999,91,"Albisrieden",45.7
+2000,91,"Albisrieden",45.3
+2001,91,"Albisrieden",44.8
+2002,91,"Albisrieden",44.5
+2003,91,"Albisrieden",44.2
+2004,91,"Albisrieden",43.9
+2005,91,"Albisrieden",43.7
+2006,91,"Albisrieden",43.7
+2007,91,"Albisrieden",43.2
+2008,91,"Albisrieden",43.1
+2009,91,"Albisrieden",42.8
+2010,91,"Albisrieden",42.6
+2011,91,"Albisrieden",41.6
+2012,91,"Albisrieden",41.1
+2013,91,"Albisrieden",41.1
+2014,91,"Albisrieden",41.2
+2015,91,"Albisrieden",41.2
+2016,91,"Albisrieden",39.6
+2017,91,"Albisrieden",39.1
+2018,91,"Albisrieden",39.1
+2019,91,"Albisrieden",39.1
+2020,91,"Albisrieden",39.3
+2021,91,"Albisrieden",39.4
+2022,91,"Albisrieden",39.6
+2023,91,"Albisrieden",39.7
+2024,91,"Albisrieden",39.9
+1993,92,"Altstetten",41
+1994,92,"Altstetten",40.9
+1995,92,"Altstetten",40.8
+1996,92,"Altstetten",41
+1997,92,"Altstetten",40.7
+1998,92,"Altstetten",40.5
+1999,92,"Altstetten",40.2
+2000,92,"Altstetten",39.9
+2001,92,"Altstetten",39.6
+2002,92,"Altstetten",39.5
+2003,92,"Altstetten",39.9
+2004,92,"Altstetten",40
+2005,92,"Altstetten",40.1
+2006,92,"Altstetten",39.9
+2007,92,"Altstetten",39.5
+2008,92,"Altstetten",39.1
+2009,92,"Altstetten",38.9
+2010,92,"Altstetten",38.4
+2011,92,"Altstetten",38.3
+2012,92,"Altstetten",38.3
+2013,92,"Altstetten",38.4
+2014,92,"Altstetten",38.3
+2015,92,"Altstetten",38.3
+2016,92,"Altstetten",38.5
+2017,92,"Altstetten",38.2
+2018,92,"Altstetten",37.8
+2019,92,"Altstetten",37.5
+2020,92,"Altstetten",37.7
+2021,92,"Altstetten",37.7
+2022,92,"Altstetten",37.5
+2023,92,"Altstetten",37.4
+2024,92,"Altstetten",37.6
+1993,101,"Höngg",44.7
+1994,101,"Höngg",44.9
+1995,101,"Höngg",45.1
+1996,101,"Höngg",44.7
+1997,101,"Höngg",44.6
+1998,101,"Höngg",44.4
+1999,101,"Höngg",43.6
+2000,101,"Höngg",43.8
+2001,101,"Höngg",43.3
+2002,101,"Höngg",43.3
+2003,101,"Höngg",42.9
+2004,101,"Höngg",42.8
+2005,101,"Höngg",43
+2006,101,"Höngg",43
+2007,101,"Höngg",43.1
+2008,101,"Höngg",43.2
+2009,101,"Höngg",43.2
+2010,101,"Höngg",43.1
+2011,101,"Höngg",42.8
+2012,101,"Höngg",42.8
+2013,101,"Höngg",42.7
+2014,101,"Höngg",42.3
+2015,101,"Höngg",41.8
+2016,101,"Höngg",40.6
+2017,101,"Höngg",40.4
+2018,101,"Höngg",40.1
+2019,101,"Höngg",40.2
+2020,101,"Höngg",40.2
+2021,101,"Höngg",40.3
+2022,101,"Höngg",40.5
+2023,101,"Höngg",40.8
+2024,101,"Höngg",40.9
+1993,102,"Wipkingen",36.8
+1994,102,"Wipkingen",36.8
+1995,102,"Wipkingen",36.7
+1996,102,"Wipkingen",36.6
+1997,102,"Wipkingen",36.6
+1998,102,"Wipkingen",36.2
+1999,102,"Wipkingen",36
+2000,102,"Wipkingen",35.9
+2001,102,"Wipkingen",36
+2002,102,"Wipkingen",36.2
+2003,102,"Wipkingen",36.5
+2004,102,"Wipkingen",36.6
+2005,102,"Wipkingen",36.7
+2006,102,"Wipkingen",36.7
+2007,102,"Wipkingen",36.5
+2008,102,"Wipkingen",36.6
+2009,102,"Wipkingen",36.3
+2010,102,"Wipkingen",36.6
+2011,102,"Wipkingen",36.6
+2012,102,"Wipkingen",36.7
+2013,102,"Wipkingen",37
+2014,102,"Wipkingen",37.2
+2015,102,"Wipkingen",37
+2016,102,"Wipkingen",37
+2017,102,"Wipkingen",37.1
+2018,102,"Wipkingen",37.5
+2019,102,"Wipkingen",37.8
+2020,102,"Wipkingen",37.9
+2021,102,"Wipkingen",38
+2022,102,"Wipkingen",38
+2023,102,"Wipkingen",38.2
+2024,102,"Wipkingen",38.4
+1993,111,"Affoltern",39.1
+1994,111,"Affoltern",39.4
+1995,111,"Affoltern",39.2
+1996,111,"Affoltern",39.3
+1997,111,"Affoltern",38.8
+1998,111,"Affoltern",38.4
+1999,111,"Affoltern",38.3
+2000,111,"Affoltern",38.5
+2001,111,"Affoltern",38.2
+2002,111,"Affoltern",38.2
+2003,111,"Affoltern",38.2
+2004,111,"Affoltern",38.5
+2005,111,"Affoltern",38.5
+2006,111,"Affoltern",38.6
+2007,111,"Affoltern",36.8
+2008,111,"Affoltern",36
+2009,111,"Affoltern",36.5
+2010,111,"Affoltern",36.5
+2011,111,"Affoltern",35.9
+2012,111,"Affoltern",36
+2013,111,"Affoltern",36.2
+2014,111,"Affoltern",35.7
+2015,111,"Affoltern",36
+2016,111,"Affoltern",36.3
+2017,111,"Affoltern",36.3
+2018,111,"Affoltern",36.4
+2019,111,"Affoltern",36.5
+2020,111,"Affoltern",36.8
+2021,111,"Affoltern",36.8
+2022,111,"Affoltern",36.7
+2023,111,"Affoltern",36.7
+2024,111,"Affoltern",36.7
+1993,115,"Oerlikon",39.5
+1994,115,"Oerlikon",38.8
+1995,115,"Oerlikon",37.9
+1996,115,"Oerlikon",37.7
+1997,115,"Oerlikon",37.7
+1998,115,"Oerlikon",37.1
+1999,115,"Oerlikon",36.7
+2000,115,"Oerlikon",36.4
+2001,115,"Oerlikon",36
+2002,115,"Oerlikon",35.7
+2003,115,"Oerlikon",35.7
+2004,115,"Oerlikon",35.9
+2005,115,"Oerlikon",36
+2006,115,"Oerlikon",35.8
+2007,115,"Oerlikon",35.4
+2008,115,"Oerlikon",35.3
+2009,115,"Oerlikon",35.1
+2010,115,"Oerlikon",35.1
+2011,115,"Oerlikon",35
+2012,115,"Oerlikon",35
+2013,115,"Oerlikon",35.2
+2014,115,"Oerlikon",35.1
+2015,115,"Oerlikon",35
+2016,115,"Oerlikon",35
+2017,115,"Oerlikon",34.7
+2018,115,"Oerlikon",34.7
+2019,115,"Oerlikon",34.9
+2020,115,"Oerlikon",34.8
+2021,115,"Oerlikon",34.5
+2022,115,"Oerlikon",34.7
+2023,115,"Oerlikon",34.9
+2024,115,"Oerlikon",35.2
+1993,119,"Seebach",40.2
+1994,119,"Seebach",39.9
+1995,119,"Seebach",39.8
+1996,119,"Seebach",39.8
+1997,119,"Seebach",39.6
+1998,119,"Seebach",38.9
+1999,119,"Seebach",38.8
+2000,119,"Seebach",38.9
+2001,119,"Seebach",38.3
+2002,119,"Seebach",37.7
+2003,119,"Seebach",37.3
+2004,119,"Seebach",37.2
+2005,119,"Seebach",37.1
+2006,119,"Seebach",36.5
+2007,119,"Seebach",36.1
+2008,119,"Seebach",36.1
+2009,119,"Seebach",36.5
+2010,119,"Seebach",36.1
+2011,119,"Seebach",36.2
+2012,119,"Seebach",35.8
+2013,119,"Seebach",35.6
+2014,119,"Seebach",35.7
+2015,119,"Seebach",35.9
+2016,119,"Seebach",36.2
+2017,119,"Seebach",36.2
+2018,119,"Seebach",36.4
+2019,119,"Seebach",36.6
+2020,119,"Seebach",36.7
+2021,119,"Seebach",36.7
+2022,119,"Seebach",36.5
+2023,119,"Seebach",36.6
+2024,119,"Seebach",36.6
+1993,121,"Saatlen",38.5
+1994,121,"Saatlen",38.1
+1995,121,"Saatlen",37.8
+1996,121,"Saatlen",37.7
+1997,121,"Saatlen",37.3
+1998,121,"Saatlen",36.9
+1999,121,"Saatlen",36.7
+2000,121,"Saatlen",37
+2001,121,"Saatlen",36.8
+2002,121,"Saatlen",36
+2003,121,"Saatlen",36.6
+2004,121,"Saatlen",35.9
+2005,121,"Saatlen",36.2
+2006,121,"Saatlen",35.9
+2007,121,"Saatlen",35.9
+2008,121,"Saatlen",35.5
+2009,121,"Saatlen",34.9
+2010,121,"Saatlen",35
+2011,121,"Saatlen",34.9
+2012,121,"Saatlen",35.1
+2013,121,"Saatlen",34.5
+2014,121,"Saatlen",34
+2015,121,"Saatlen",33.2
+2016,121,"Saatlen",33.9
+2017,121,"Saatlen",34.1
+2018,121,"Saatlen",33.9
+2019,121,"Saatlen",33.9
+2020,121,"Saatlen",34.3
+2021,121,"Saatlen",34.4
+2022,121,"Saatlen",34.8
+2023,121,"Saatlen",35
+2024,121,"Saatlen",35.4
+1993,122,"Schwamendingen-Mitte",41.4
+1994,122,"Schwamendingen-Mitte",41.7
+1995,122,"Schwamendingen-Mitte",41.3
+1996,122,"Schwamendingen-Mitte",41.5
+1997,122,"Schwamendingen-Mitte",41.1
+1998,122,"Schwamendingen-Mitte",41
+1999,122,"Schwamendingen-Mitte",40.4
+2000,122,"Schwamendingen-Mitte",39.9
+2001,122,"Schwamendingen-Mitte",39.7
+2002,122,"Schwamendingen-Mitte",39.6
+2003,122,"Schwamendingen-Mitte",39.4
+2004,122,"Schwamendingen-Mitte",39.4
+2005,122,"Schwamendingen-Mitte",39.2
+2006,122,"Schwamendingen-Mitte",38.7
+2007,122,"Schwamendingen-Mitte",38.1
+2008,122,"Schwamendingen-Mitte",37.8
+2009,122,"Schwamendingen-Mitte",37.4
+2010,122,"Schwamendingen-Mitte",37.5
+2011,122,"Schwamendingen-Mitte",37.6
+2012,122,"Schwamendingen-Mitte",37.5
+2013,122,"Schwamendingen-Mitte",36.8
+2014,122,"Schwamendingen-Mitte",36.7
+2015,122,"Schwamendingen-Mitte",36.7
+2016,122,"Schwamendingen-Mitte",37.1
+2017,122,"Schwamendingen-Mitte",37.3
+2018,122,"Schwamendingen-Mitte",37.3
+2019,122,"Schwamendingen-Mitte",36.9
+2020,122,"Schwamendingen-Mitte",37.1
+2021,122,"Schwamendingen-Mitte",37.2
+2022,122,"Schwamendingen-Mitte",36.9
+2023,122,"Schwamendingen-Mitte",36.8
+2024,122,"Schwamendingen-Mitte",36.7
+1993,123,"Hirzenbach",40.6
+1994,123,"Hirzenbach",40.3
+1995,123,"Hirzenbach",40
+1996,123,"Hirzenbach",40
+1997,123,"Hirzenbach",39.7
+1998,123,"Hirzenbach",39.4
+1999,123,"Hirzenbach",39.2
+2000,123,"Hirzenbach",39
+2001,123,"Hirzenbach",39
+2002,123,"Hirzenbach",39
+2003,123,"Hirzenbach",39
+2004,123,"Hirzenbach",38.7
+2005,123,"Hirzenbach",38.1
+2006,123,"Hirzenbach",37.8
+2007,123,"Hirzenbach",36.7
+2008,123,"Hirzenbach",36.5
+2009,123,"Hirzenbach",36.3
+2010,123,"Hirzenbach",37
+2011,123,"Hirzenbach",36.5
+2012,123,"Hirzenbach",36.7
+2013,123,"Hirzenbach",37.4
+2014,123,"Hirzenbach",36.6
+2015,123,"Hirzenbach",36.4
+2016,123,"Hirzenbach",35.8
+2017,123,"Hirzenbach",36
+2018,123,"Hirzenbach",35.6
+2019,123,"Hirzenbach",35.5
+2020,123,"Hirzenbach",36.2
+2021,123,"Hirzenbach",36.6
+2022,123,"Hirzenbach",36.7
+2023,123,"Hirzenbach",36.6
+2024,123,"Hirzenbach",36.9
+  </script>
+
+  <!-- END OF CSV AREA -->
+  <!-- ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ -->
+
+  <header>
+    <h1 id="header-title">Medianalter in Zürich</h1>
+    <p id="header-subtitle">Dashboard basierend auf deinem CSV</p>
+  </header>
+
+  <main>
+
+    <!-- KPI CARDS -->
+    <section id="kpis">
+      <div class="kpi-card">
+        <div id="kpi-region-label" class="kpi-label">Medianalter (Region)</div>
+        <div id="kpi-region-age" class="kpi-value"></div>
+        <div id="kpi-region-change" class="kpi-sub"></div>
+      </div>
+      <div class="kpi-card">
+        <div id="kpi-city-label" class="kpi-label">Medianalter (Ganze Stadt)</div>
+        <div id="kpi-city-age" class="kpi-value"></div>
+        <div id="kpi-city-diff" class="kpi-sub"></div>
+      </div>
+    </section>
+
+    <section id="controls">
+      <div>
+        <label id="controls-region-label">Region</label><br>
+        <select id="region-select"></select>
+      </div>
+      <div>
+        <label><span id="controls-year-label">Jahr</span>: <span id="year-label"></span></label><br>
+        <input type="range" id="year-range">
+      </div>
+      <div>
+        <label id="lang-label">Sprache</label><br>
+        <select id="lang-select">
+          <option value="de">Deutsch</option>
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="it">Italiano</option>
+          <option value="fr">Français</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- DOWNLOAD BUTTONS -->
+    <section class="chart-card" id="download-card">
+      <h3 id="download-title">Daten herunterladen</h3>
+      <button id="download-year">CSV: aktuelles Jahr (alle Regionen)</button>
+      <button id="download-region">CSV: aktuelle Region (alle Jahre)</button>
+      <p id="download-hint" style="font-size:0.8rem; color:#6b7280; margin-top:6px;">
+        Die CSVs enthalten genau die Daten, die im Bar-Chart (Jahr) bzw. im Linien-Chart (Region) dargestellt sind.
+      </p>
+    </section>
+
+    <section class="chart-card">
+      <h3 id="line-title">Medianalter über die Zeit</h3>
+      <canvas id="line-chart"></canvas>
+    </section>
+
+    <section class="chart-card">
+      <h3 id="bar-title">Vergleich der Regionen</h3>
+      <canvas id="bar-chart"></canvas>
+    </section>
+
+    <section class="chart-card">
+      <h3 id="map-title">Karte der Regionen</h3>
+      <div id="map"></div>
+      <p id="map-hint" style="font-size:0.8rem; color:#6b7280; margin-top:6px;">
+        Farben zeigen das Medianalter in der gewählten Region und dem gewählten Jahr. Klick auf einen Kreis aktualisiert die Charts.
+      </p>
+    </section>
+
+  </main>
+
+
+  <!-- Dashboard JS -->
+  <script>
+    // ---------------------------
+    // i18n (translations)
+    // ---------------------------
+    let currentLang = "de";
+
+    const i18n = {
+      de: {
+        appTitle: "Medianalter in Zürich – Dashboard",
+        headerTitle: "Medianalter in Zürich",
+        headerSubtitle: "Dashboard basierend auf deinem CSV",
+        kpiRegionLabel: "Medianalter (Region)",
+        kpiCityLabel: "Medianalter (Ganze Stadt)",
+        controlsRegionLabel: "Region",
+        controlsYearLabel: "Jahr",
+        langLabel: "Sprache",
+        downloadTitle: "Daten herunterladen",
+        downloadYearButton: "CSV: aktuelles Jahr (alle Regionen)",
+        downloadRegionButton: "CSV: aktuelle Region (alle Jahre)",
+        downloadHint: "Die CSVs enthalten genau die Daten, die im Bar-Chart (Jahr) bzw. im Linien-Chart (Region) dargestellt sind.",
+        lineTitle: "Medianalter über die Zeit",
+        barTitle: "Vergleich der Regionen",
+        mapTitle: "Karte der Regionen",
+        mapHint: "Farben zeigen das Medianalter in der gewählten Region und dem gewählten Jahr. Klick auf einen Kreis aktualisiert die Charts.",
+        kpiChangeSince: "Veränderung seit {year}: {value} Jahre",
+        kpiNoPrevData: "Keine Vorjahresdaten",
+        kpiDiffToCity: "Differenz zur Stadt: {value} Jahre",
+        chartLabelRegion: "{region}",
+        chartLabelMedianAgeYear: "Medianalter {year}"
+      },
+      en: {
+        appTitle: "Median age in Zurich – Dashboard",
+        headerTitle: "Median age in Zurich",
+        headerSubtitle: "Dashboard based on your CSV",
+        kpiRegionLabel: "Median age (region)",
+        kpiCityLabel: "Median age (whole city)",
+        controlsRegionLabel: "Region",
+        controlsYearLabel: "Year",
+        langLabel: "Language",
+        downloadTitle: "Download data",
+        downloadYearButton: "CSV: current year (all regions)",
+        downloadRegionButton: "CSV: current region (all years)",
+        downloadHint: "The CSV files contain exactly the data shown in the bar chart (year) and the line chart (region).",
+        lineTitle: "Median age over time",
+        barTitle: "Comparison of regions",
+        mapTitle: "Map of regions",
+        mapHint: "Colors show the median age in the selected region and year. Click a circle to update the charts.",
+        kpiChangeSince: "Change since {year}: {value} years",
+        kpiNoPrevData: "No previous-year data",
+        kpiDiffToCity: "Difference to city: {value} years",
+        chartLabelRegion: "{region}",
+        chartLabelMedianAgeYear: "Median age {year}"
+      },
+      es: {
+        appTitle: "Edad mediana en Zúrich – Panel",
+        headerTitle: "Edad mediana en Zúrich",
+        headerSubtitle: "Panel basado en tu CSV",
+        kpiRegionLabel: "Edad mediana (región)",
+        kpiCityLabel: "Edad mediana (toda la ciudad)",
+        controlsRegionLabel: "Región",
+        controlsYearLabel: "Año",
+        langLabel: "Idioma",
+        downloadTitle: "Descargar datos",
+        downloadYearButton: "CSV: año actual (todas las regiones)",
+        downloadRegionButton: "CSV: región actual (todos los años)",
+        downloadHint: "Los CSV contienen exactamente los datos que se muestran en el gráfico de barras (año) y en el gráfico de líneas (región).",
+        lineTitle: "Edad mediana a lo largo del tiempo",
+        barTitle: "Comparación de regiones",
+        mapTitle: "Mapa de las regiones",
+        mapHint: "Los colores muestran la edad mediana en la región y año seleccionados. Haz clic en un círculo para actualizar los gráficos.",
+        kpiChangeSince: "Cambio desde {year}: {value} años",
+        kpiNoPrevData: "No hay datos del año anterior",
+        kpiDiffToCity: "Diferencia con la ciudad: {value} años",
+        chartLabelRegion: "{region}",
+        chartLabelMedianAgeYear: "Edad mediana {year}"
+      },
+      it: {
+        appTitle: "Età mediana a Zurigo – Dashboard",
+        headerTitle: "Età mediana a Zurigo",
+        headerSubtitle: "Dashboard basata sul tuo CSV",
+        kpiRegionLabel: "Età mediana (regione)",
+        kpiCityLabel: "Età mediana (intera città)",
+        controlsRegionLabel: "Regione",
+        controlsYearLabel: "Anno",
+        langLabel: "Lingua",
+        downloadTitle: "Scarica i dati",
+        downloadYearButton: "CSV: anno corrente (tutte le regioni)",
+        downloadRegionButton: "CSV: regione corrente (tutti gli anni)",
+        downloadHint: "I file CSV contengono esattamente i dati mostrati nel grafico a barre (anno) e nel grafico a linee (regione).",
+        lineTitle: "Età mediana nel tempo",
+        barTitle: "Confronto delle regioni",
+        mapTitle: "Mappa delle regioni",
+        mapHint: "I colori mostrano l’età mediana nella regione e nell’anno selezionati. Clicca su un cerchio per aggiornare i grafici.",
+        kpiChangeSince: "Variazione dal {year}: {value} anni",
+        kpiNoPrevData: "Nessun dato dell’anno precedente",
+        kpiDiffToCity: "Differenza rispetto alla città: {value} anni",
+        chartLabelRegion: "{region}",
+        chartLabelMedianAgeYear: "Età mediana {year}"
+      },
+      fr: {
+        appTitle: "Âge médian à Zurich – Tableau de bord",
+        headerTitle: "Âge médian à Zurich",
+        headerSubtitle: "Tableau de bord basé sur votre CSV",
+        kpiRegionLabel: "Âge médian (région)",
+        kpiCityLabel: "Âge médian (ensemble de la ville)",
+        controlsRegionLabel: "Région",
+        controlsYearLabel: "Année",
+        langLabel: "Langue",
+        downloadTitle: "Télécharger les données",
+        downloadYearButton: "CSV : année actuelle (toutes les régions)",
+        downloadRegionButton: "CSV : région actuelle (toutes les années)",
+        downloadHint: "Les fichiers CSV contiennent exactement les données affichées dans le graphique en barres (année) et le graphique linéaire (région).",
+        lineTitle: "Âge médian dans le temps",
+        barTitle: "Comparaison des régions",
+        mapTitle: "Carte des régions",
+        mapHint: "Les couleurs indiquent l’âge médian pour la région et l’année sélectionnées. Cliquez sur un cercle pour mettre à jour les graphiques.",
+        kpiChangeSince: "Évolution depuis {year} : {value} ans",
+        kpiNoPrevData: "Pas de données pour l’année précédente",
+        kpiDiffToCity: "Écart avec la ville : {value} ans",
+        chartLabelRegion: "{region}",
+        chartLabelMedianAgeYear: "Âge médian {year}"
+      }
+    };
+
+    function t(key) {
+      return (i18n[currentLang] && i18n[currentLang][key]) ||
+             (i18n["de"] && i18n["de"][key]) ||
+             key;
+    }
+
+    function format(str, vars) {
+      return str.replace(/\{(\w+)\}/g, (_, k) => vars[k]);
+    }
+
+    function applyTranslationsStatic() {
+      document.title = t("appTitle");
+      document.getElementById("header-title").textContent = t("headerTitle");
+      document.getElementById("header-subtitle").textContent = t("headerSubtitle");
+      document.getElementById("kpi-region-label").textContent = t("kpiRegionLabel");
+      document.getElementById("kpi-city-label").textContent = t("kpiCityLabel");
+      document.getElementById("controls-region-label").textContent = t("controlsRegionLabel");
+      document.getElementById("controls-year-label").textContent = t("controlsYearLabel");
+      document.getElementById("lang-label").textContent = t("langLabel");
+      document.getElementById("download-title").textContent = t("downloadTitle");
+      document.getElementById("download-year").textContent = t("downloadYearButton");
+      document.getElementById("download-region").textContent = t("downloadRegionButton");
+      document.getElementById("download-hint").textContent = t("downloadHint");
+      document.getElementById("map-title").textContent = t("mapTitle");
+      document.getElementById("map-hint").textContent = t("mapHint");
+    }
+
+    // ---------------------------
+    // CSV PARSER (no libraries)
+    // ---------------------------
+    function parseCSV(csv) {
+      const lines = csv.trim().split("\n");
+      const header = lines[0].split(",");
+
+      return lines.slice(1).map(line => {
+        if (!line.trim()) return null;
+        const parts = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g);
+        if (!parts) return null;
+
+        const obj = {};
+        header.forEach((h, i) => {
+          let val = (parts[i] || "").replace(/^"|"$/g, "");
+          if (!isNaN(val) && val !== "") val = Number(val);
+          obj[h.trim()] = val;
+        });
+        return obj;
+      }).filter(Boolean);
+    }
+
+    // Load CSV from script tag
+    const rawCSV = document.getElementById("csv-data").textContent;
+    const DATA = parseCSV(rawCSV);
+
+    // Extract regions and years
+    const regions = [...new Set(DATA.map(d => d.RaumLang))].sort();
+    const years = [...new Set(DATA.map(d => d.StichtagDatJahr))].sort((a,b)=>a-b);
+
+    const regionSelect = document.getElementById("region-select");
+    const yearRange = document.getElementById("year-range");
+    const yearLabel = document.getElementById("year-label");
+    const langSelect = document.getElementById("lang-select");
+
+    // Fill dropdown
+    regions.forEach(r => {
+      const opt = document.createElement("option");
+      opt.value = r;
+      opt.textContent = r;
+      regionSelect.appendChild(opt);
+    });
+
+    // Year slider
+    yearRange.min = years[0];
+    yearRange.max = years[years.length - 1];
+    yearRange.value = years[years.length - 1];
+
+    // Chart contexts
+    const lineCtx = document.getElementById("line-chart").getContext("2d");
+    const barCtx = document.getElementById("bar-chart").getContext("2d");
+
+    let lineChart = null;
+    let barChart = null;
+
+    function updateLineChart(region) {
+      const data = DATA.filter(d => d.RaumLang === region)
+        .sort((a,b)=>a.StichtagDatJahr - b.StichtagDatJahr);
+
+      const labels = data.map(d => d.StichtagDatJahr);
+      const values = data.map(d => d.Medianalter);
+
+      if (lineChart) lineChart.destroy();
+
+      lineChart = new Chart(lineCtx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: format(t("chartLabelRegion"), { region }),
+            data: values,
+            tension: 0.3
+          }]
+        }
+      });
+
+      document.getElementById("line-title").textContent =
+        t("lineTitle") + " – " + region;
+    }
+
+    function updateBarChart(year) {
+      const data = DATA.filter(d => d.StichtagDatJahr === year);
+
+      const labels = data.map(d => d.RaumLang);
+      const values = data.map(d => d.Medianalter);
+
+      if (barChart) barChart.destroy();
+
+      barChart = new Chart(barCtx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: format(t("chartLabelMedianAgeYear"), { year }),
+            data: values,
+            backgroundColor: "rgba(255, 105, 180, 0.7)",  // pink bars
+            borderColor: "rgba(255, 20, 147, 1)",          // darker pink outline
+            borderWidth: 1
+          }]
+        }
+      });
+
+      document.getElementById("bar-title").textContent =
+        t("barTitle") + " – " + year;
+    }
+
+    // ---------------------------
+    // KPI updater
+    // ---------------------------
+    function updateKpis(region, year) {
+      const regionRow = DATA.find(d => d.RaumLang === region && d.StichtagDatJahr === year);
+      const prevRow   = DATA.find(d => d.RaumLang === region && d.StichtagDatJahr === year - 1);
+      const cityRow   = DATA.find(d => d.RaumLang === "Ganze Stadt" && d.StichtagDatJahr === year);
+
+      const kpiRegionAge    = document.getElementById("kpi-region-age");
+      const kpiRegionChange = document.getElementById("kpi-region-change");
+      const kpiCityAge      = document.getElementById("kpi-city-age");
+      const kpiCityDiff     = document.getElementById("kpi-city-diff");
+
+      if (regionRow) {
+        kpiRegionAge.textContent = regionRow.Medianalter.toFixed(1) + " ";
+        // Language-specific unit already in template for change, city diff etc.
+        if (prevRow) {
+          const diff = regionRow.Medianalter - prevRow.Medianalter;
+          const sign = diff > 0 ? "+" : "";
+          const valStr = sign + diff.toFixed(1);
+          kpiRegionChange.textContent =
+            format(t("kpiChangeSince"), { year: year - 1, value: valStr });
+        } else {
+          kpiRegionChange.textContent = t("kpiNoPrevData");
+        }
+      } else {
+        kpiRegionAge.textContent = "-";
+        kpiRegionChange.textContent = "";
+      }
+
+      if (cityRow) {
+        kpiCityAge.textContent = cityRow.Medianalter.toFixed(1) + " ";
+        if (regionRow) {
+          const diffCity = regionRow.Medianalter - cityRow.Medianalter;
+          const signCity = diffCity > 0 ? "+" : "";
+          const valStr = signCity + diffCity.toFixed(1);
+          kpiCityDiff.textContent =
+            format(t("kpiDiffToCity"), { value: valStr });
+        } else {
+          kpiCityDiff.textContent = "";
+        }
+      } else {
+        kpiCityAge.textContent = "-";
+        kpiCityDiff.textContent = "";
+      }
+    }
+
+    // ---------------------------
+    // MAP SETUP (markers per Kreis)
+    // ---------------------------
+
+    // Approximate coordinates per district
+    const REGION_COORDS = {
+      "Ganze Stadt": [47.3769, 8.5417],
+      "Kreis 1": [47.3715, 8.5410],
+      "Kreis 2": [47.3400, 8.5220],
+      "Kreis 3": [47.3660, 8.5080],
+      "Kreis 4": [47.3760, 8.5160],
+      "Kreis 5": [47.3900, 8.5200],
+      "Kreis 6": [47.4000, 8.5530],
+      "Kreis 7": [47.3620, 8.5710],
+      "Kreis 8": [47.3490, 8.5670],
+      "Kreis 9": [47.3890, 8.4890],
+      "Kreis 10": [47.4080, 8.5030],
+      "Kreis 11": [47.4230, 8.5170],
+      "Kreis 12": [47.4110, 8.5410]
+    };
+
+    let map;
+    const regionMarkers = {};
+
+    function getMedianAge(region, year) {
+      const row = DATA.find(
+        d => d.RaumLang === region && d.StichtagDatJahr === year
+      );
+      return row ? row.Medianalter : null;
+    }
+
+    function ageToColor(age) {
+      if (age == null) return "#e5e7eb";       // grey if no data
+      if (age < 36) return "#fde2e9";
+      if (age < 38) return "#f9a8d4";
+      if (age < 40) return "#f472b6";
+      return "#db2777";
+    }
+
+    function markerStyle(region, year) {
+      const age = getMedianAge(region, year);
+      const color = ageToColor(age);
+      return {
+        radius: 10,
+        color: "#be185d",
+        weight: 1,
+        fillColor: color,
+        fillOpacity: 0.8
+      };
+    }
+
+    function initMap() {
+      map = L.map("map").setView([47.3769, 8.5417], 11.7);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+
+      const currentYear = Number(yearRange.value);
+
+      regions.forEach(region => {
+        const coords = REGION_COORDS[region];
+        if (!coords) return;
+
+        const marker = L.circleMarker(coords, markerStyle(region, currentYear))
+          .addTo(map)
+          .bindTooltip(region, { sticky: true });
+
+        marker.on("click", () => {
+          regionSelect.value = region;
+          updateDashboard();
+        });
+
+        regionMarkers[region] = marker;
+      });
+    }
+
+    function updateMap(year) {
+      Object.entries(regionMarkers).forEach(([region, marker]) => {
+        marker.setStyle(markerStyle(region, year));
+      });
+    }
+
+    // ---------------------------
+    // DOWNLOAD HELPERS
+    // ---------------------------
+    function downloadCSV(filename, csvContent) {
+      const csvWithBom = "\uFEFF" + csvContent; // BOM helps Excel with UTF-8
+      const dataUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvWithBom);
+    
+      const a = document.createElement("a");
+      a.setAttribute("href", dataUri);
+      a.setAttribute("download", filename);
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    function buildYearCSV(year) {
+      const rows = DATA
+        .filter(d => d.StichtagDatJahr === year)
+        .sort((a, b) => a.RaumLang.localeCompare(b.RaumLang));
+
+      const header = "RaumLang,StichtagDatJahr,Medianalter\n";
+      const lines = rows.map(r =>
+        `"${r.RaumLang}",${r.StichtagDatJahr},${r.Medianalter}`
+      );
+      return header + lines.join("\n");
+    }
+
+    function buildRegionCSV(region) {
+      const rows = DATA
+        .filter(d => d.RaumLang === region)
+        .sort((a, b) => a.StichtagDatJahr - b.StichtagDatJahr);
+
+      const header = "RaumLang,StichtagDatJahr,Medianalter\n";
+      const lines = rows.map(r =>
+        `"${r.RaumLang}",${r.StichtagDatJahr},${r.Medianalter}`
+      );
+      return header + lines.join("\n");
+    }
+
+    const downloadYearBtn = document.getElementById("download-year");
+    const downloadRegionBtn = document.getElementById("download-region");
+
+    downloadYearBtn.addEventListener("click", () => {
+      const year = Number(yearRange.value);
+      const csv = buildYearCSV(year);
+      downloadCSV(`medianalter_zuerich_jahr_${year}.csv`, csv);
+    });
+
+    downloadRegionBtn.addEventListener("click", () => {
+      const region = regionSelect.value;
+      const safeRegion = region.replace(/\s+/g, "_").replace(/[^\w_äöüÄÖÜß]/g, "");
+      const csv = buildRegionCSV(region);
+      downloadCSV(`medianalter_zuerich_region_${safeRegion}.csv`, csv);
+    });
+
+    // ---------------------------
+    // MAIN DASHBOARD UPDATE
+    // ---------------------------
+    function updateDashboard() {
+      const region = regionSelect.value;
+      const year = Number(yearRange.value);
+
+      yearLabel.textContent = year;
+
+      updateLineChart(region);
+      updateBarChart(year);
+      updateKpis(region, year);
+      updateMap(year);
+    }
+
+    regionSelect.addEventListener("change", updateDashboard);
+    yearRange.addEventListener("input", updateDashboard);
+
+    langSelect.addEventListener("change", () => {
+      currentLang = langSelect.value;
+      applyTranslationsStatic();
+      updateDashboard();
+    });
+
+    // Default selection & init
+    regionSelect.value = "Ganze Stadt";
+    applyTranslationsStatic();
+    initMap();
+    updateDashboard();
+  </script>
+
+</body>
+</html>
